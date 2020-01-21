@@ -11,7 +11,7 @@ function generateRandomString() {
   return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
 
 }
-console.log(generateRandomString());
+
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -22,8 +22,13 @@ const urlDatabase = {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
-  console.log(longURL)
+  
+
 });
+app.post("/urls/:shortURL/delete", (req,res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
+})
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -36,14 +41,16 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   let urlVars = {
     shortURL: String(generateRandomString()),
     longURL: req.body.longURL,
   }
-  res.render("urls_show", urlVars)
-  res.send(urlDatabase[urlVars['shortURL']] = urlVars['longURL']);   
-  console.log(urlDatabase);     // Respond with 'Ok' (we will replace this)
+  urlDatabase[urlVars['shortURL']] = urlVars['longURL']
+  res.render("urls_show", urlVars  )
+  ;   
+
+  
 });
      app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
