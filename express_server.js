@@ -47,11 +47,14 @@ app.post("/urls/:shortURL", (req, res) =>{
 app.post("/urls/:shortURL/edit", (req, res) =>{
   let templateVars = { shortURL: req.params.shortURL,longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
- 
-  /* */
- })
+})
 app.post("/urls/:shortURL/delete", (req,res) => {
   delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
+})
+app.post("/login", (req, res) =>{
+  res.cookie("username", req.body.username)// <-options[]
+  //console.log("hi");
   res.redirect('/urls')
 })
 
