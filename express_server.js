@@ -2,6 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
@@ -25,10 +29,32 @@ app.get("/u/:shortURL", (req, res) => {
   
 
 });
+app.post("/urls/:shortURL", (req, res) =>{
+  let templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: req.body.newURL
+    
+  }
+  //console.log(urlVars)
+  urlDatabase[req.params.shortURL] = req.body.newURL;
+  console.log(templateVars)
+  //templateVars = { urls: urlDatabase }; 
+  console.log(urlDatabase)
+  res.render("urls_show", templateVars); 
+
+});
+
+app.post("/urls/:shortURL/edit", (req, res) =>{
+  let templateVars = { shortURL: req.params.shortURL,longURL: urlDatabase[req.params.shortURL]};
+  res.render("urls_show", templateVars);
+ 
+  /* */
+ })
 app.post("/urls/:shortURL/delete", (req,res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls')
 })
+
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -47,11 +73,9 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
   }
   urlDatabase[urlVars['shortURL']] = urlVars['longURL']
-  res.render("urls_show", urlVars  )
-  ;   
+  res.redirect("/urls/" + urlVars['shortURL']);
+  
 
   
 });
-     app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+  
