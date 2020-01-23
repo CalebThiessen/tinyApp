@@ -16,12 +16,18 @@
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
 
-          
-          <form method= "POST" action="/login" value="">
-            <input type="text" name="username">
-            <button type="submit"  value="submit">"Log in"</button>
+          <!-- COOKIES -->
+            <% if (username) {%>
+              <form method= "POST" action="/logout">
+                <button  type="logout"  value="logout">Logout</button>
+              </form> 
+            <a class="navbar-brand" href="/urls">&nbsp;&nbsp;Logged in as <%= username %>!</a>
+        <%} else {%>
+          <form method= "POST" action="/login" id="cookies">
+            <input type="text" placeholder="asdasdas" name="username">
+            <button type="submit"  value="submit">Log in</button>
           </form> 
-
+          <%}%>
         </div>
       </div>
     </nav>
