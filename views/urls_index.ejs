@@ -26,22 +26,23 @@
 
       </thead>
       
-      <tbody>
+      <tbody> 
+        <!-- let urlObj in db -->
         <% for(let url in urls) { %>
-         
+          
           <tr>
-            <td><%= url %></td>
+            <td data-find="discovery"><%= url %></td>
             
-            <td><%= urls[url] %>
+            <td><%= urls[url].longURL %>
               
               
                  <td>
-                <form method="POST" action="/urls/<%= url %>/edit">
+                <form method="GET" action="/urls/<%= url %>/edit">
                   <button type="submit" class="btn btn-outline-danger">Edit</button>
                 </form>
                 </td>
                 <td>
-                <form method="POST" action="/urls/<%= url %>/delete">
+                <form method="GET" action="/urls/<%= url %>/delete">
                   <button type="submit" class="btn btn-outline-danger">Delete</button>
                 </form>
               
