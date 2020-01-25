@@ -1,7 +1,7 @@
 //when  --->  listen EADDRINUSE  -->  pkill node
 const cookieParser = require('cookie-parser');
 const express = require("express");
-
+const bcrypt = require('bcrypt');
 const app = express();
 app.use(cookieParser());
 const PORT = 8080; // default port 8080
@@ -34,12 +34,18 @@ const users = {
 
 // REGISTER USER
 //ADD USER TO USERS LIST & SET COOKIE
+//const password = "erer"; // found in the req.params object
+//const hashedPassword = bcrypt.hashSync(password, 10);
+
+
+
 app.post("/register", (req, res) => {
 
   let registerVars = {
     id: String(generateRandomString()),
     email: req.body.email,
-    password: req.body.password
+    password: bcrypt.hashSync(req.body.password, 10)
+
   };
   if (registerVars["email"].length === 0 || registerVars["password"].length === 0) {
     console.error("post register error " + res.statusCode + ": either password or email field is empty");
@@ -53,9 +59,9 @@ app.post("/register", (req, res) => {
     }
     //res.cookie("username", registerVars["id"])
     users[registerVars["id"]] = registerVars;
-    console.log("TCL: registerVars;", registerVars)
-    console.log("TCL: users[registerVars['id]]", users)
-    res.redirect("/urls")
+      //console.log("TCL: registerVars;", registerVars)
+     //console.log("TCL: users[registerVars['id]]", users)
+    res.redirect("/login")
   }
 });
     //LINK IN HEADER TO REGISTRATION PAGE
@@ -82,7 +88,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   for (const elem in users)
     if (((users[elem].email === req.body.email) === true) &&
-      (users[elem].password === req.body.password) === true) {
+      bcrypt.compareSync(req.body.password, users[elem].password) === true) {
       //res.cookie("username", req.body.username)// <-options[]
       //res.cookie("username", req.body.username)
       //res.cookie("user_id", users[elem].id);
@@ -183,7 +189,7 @@ app.get("/urls/:shortURL/delete", (req, res) => {
   //console.log(req.params.shortURL) 
   //console.log(urlDatabase)
   if (urlDatabase[req.params.shortURL]["userID"] !== req.cookies["user_id"] ) 
-  {console.log("be"); res.redirect('/urls')} 
+  {res.redirect('/urls')} 
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls')//////////////WWORKING HEREEERER
 })
