@@ -1,4 +1,3 @@
-//when  --->  listen EADDRINUSE  -->  pkill node
 const cookieSession = require('cookie-session');
 const express = require("express");
 const bcrypt = require('bcrypt');
@@ -10,18 +9,13 @@ app.use(cookieSession({
 }));
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-getUserByEmail = require("./helpers")
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+getUserByEmail = require("./helpers");
+generateRandomString = require("./helpers");
+urlsForUser = require("./helpers");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
-function generateRandomString() {
-  const length = 6;
-  return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
-}
+
 let users = {
   "userRandomID": {
     id: "userRandomID",
@@ -173,18 +167,7 @@ app.post("/urls", (req, res) => {
 });
 
 //FUNCTION ALLOWING ONLY USERS TO SEE THEIR URLS
-const urlsForUser = (user) => {
-  let results = { };
-  for (const elem in urlDatabase) {
-    if (user === urlDatabase[elem]["userID"]) {
-      results[elem] = {
-        shortURL: elem,
-        longURL: urlDatabase[elem]['longURL']
-      }
-    }
-  }
-  return results
-}
+
 
 //EDIT BUTTON ON URLS LIST PAGE TO REDIRECT TO EDIT PAGE
 app.get("/urls/:shortURL/edit", (req, res) => {
@@ -242,5 +225,8 @@ app.get("/u/:shortURL", (req, res) => {
   //const longURL = urlDatabase[req.params.shortURL];
   
   //res.redirect(longURL["longURL"]);
+});
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
 
