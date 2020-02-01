@@ -128,6 +128,7 @@ app.get("/logout", (req, res) => {
 
 //LINK TO URL LIST
 app.get("/urls", (req, res) => {
+  if (!req.session.user_id) {res.redirect("/bad_request"); return};
   let templateVars = {
     urls: urlsForUser(req.session.user_id),
     user_id: req.session.user_id,
@@ -136,9 +137,18 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//LINK TO CREATION PAGE WITHOUT COOKIE
+app.get("/bad_request", (req, res) => {
+let templateVars = {
+  urls: urlsForUser(req.session.user_id),
+    user_id: req.session.user_id,
+  }
+  res.render("bad_request", templateVars)
+});
+
 // LINK TO URL CREATION PAGE
 app.get("/urls/new", (req, res) => {
-  if (!req.session.user_id) {res.redirect("/login"); return};
+  if (!req.session.user_id) {res.redirect("/bad_request"); return};
   let templateVars = {
     urls: urlDatabase,
     user_id: req.session.user_id,
@@ -159,7 +169,7 @@ app.post("/urls", (req, res) => {
   }
   urlDatabase[urlVars["shortURL"]] = { longURL: urlVars["longURL"], userID: urlVars["userID"]};  
   //[urlVars['shortURL']] = urlVars['longURL']
-  res.redirect("/urls/" + urlVars['shortURL']);
+  res.redirect("/urls/");
 });
 
 //FUNCTION ALLOWING ONLY USERS TO SEE THEIR URLS
@@ -224,8 +234,13 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //SHORT URL LINK TO ACTUAL WEBSITE
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  if (!req.session.user_id) {res.redirect("/bad_request"); return} 
   
-  res.redirect(longURL["longURL"]);
+  console.log(req);
+  console.log(req.session.user_id);
+  //else if (req.session.user_id !== urlDatabase[elem]["userID"]) {res.redirect("/bad_request"); return}; 
+  //const longURL = urlDatabase[req.params.shortURL];
+  
+  //res.redirect(longURL["longURL"]);
 });
 
