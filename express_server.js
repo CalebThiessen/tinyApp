@@ -9,12 +9,9 @@ app.use(cookieSession({
 }));
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-getUserByEmail = require("./helpers");
-generateRandomString = require("./helpers");
-urlsForUser = require("./helpers");
+const { getUserByEmail, generateRandomString} = require("./helpers");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-
 
 let users = {
   "userRandomID": {
@@ -28,26 +25,16 @@ let users = {
     password: "dishwasher-funk"
   }
 }
-
- 
-
 // LIST OF USER CREATED URLS
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
-
-// REGISTER USER
-//ADD USER TO USERS LIST & SET COOKIE
-//const password = "erer"; // found in the req.params object
-//const hashedPassword = bcrypt.hashSync(password, 10);
-
-
-
 app.post("/register", (req, res) => {
-
+  
   let registerVars = {
+    
     id: String(generateRandomString()),
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)
@@ -64,11 +51,8 @@ app.post("/register", (req, res) => {
         return res.redirect("/login");
       }
     }
-    
     users[registerVars["id"]] = registerVars;
-      //console.log("TCL: registerVars;", registerVars)
-     //console.log("TCL: users[registerVars['id]]", users)
-    res.redirect("/login")
+    res.redirect("/urls")
   }
 });
     //LINK IN HEADER TO REGISTRATION PAGE
@@ -77,6 +61,17 @@ app.get("/register", (req, res) => {
     user_id: req.session.user_id
   }
   res.render("urls_register", templateVars);
+});
+    
+app.get("/", (req, res) => {
+if (!req.session.user_id) {res.redirect("/login"); return};
+  let templateVars = {
+    urls: urlDatabase,
+    user_id: req.session.user_id,
+    shortURL: req.params.shortURL,
+    longURL: req.body.newURL
+   }
+  res.redirect("/urls/");
 });
 
    //LINK IN HEADER TO LOGIN PAGE
@@ -98,18 +93,11 @@ app.post("/login", (req, res) => {
   for (const elem in users)
   if (((users[elem].email === req.body.email) === true) &&
       bcrypt.compareSync(req.body.password, users[elem].password) === true) {
-      //res.cookie("username", req.body.username)// <-options[]
-      //res.cookie("username", req.body.username)
-      //res.cookie("user_id", users[elem].id);
-      //let userID = users[elem].id  
-      
       req.session.user_id = users[elem].id;
-      //req.session.user_email = users[elem].email
-      
-     res.redirect("/urls");
+      res.redirect("/urls");
      return
     }
-  res.statusCode = 403;
+  res.statusCode = 403
   console.log("Error " + res.statusCode + ": email or password not found");
   res.redirect("/login")
 })
@@ -121,14 +109,25 @@ app.get("/logout", (req, res) => {
 })
 
 //LINK TO URL LIST
+const urlsForUser = (user, urlDatabase) => {
+  let results = { };
+  for (const elem in urlDatabase) {
+    if (user === urlDatabase[elem]["userID"]) {
+      results[elem] = {
+        shortURL: elem,
+        longURL: urlDatabase[elem]['longURL']
+      }
+    }
+  }
+  return results
+}
 app.get("/urls", (req, res) => {
   if (!req.session.user_id) {res.redirect("/bad_request"); return};
   let templateVars = {
-    urls: urlsForUser(req.session.user_id),
+    urls: urlsForUser(req.session.user_id,urlDatabase),
     user_id: req.session.user_id,
-  
     }
-  res.render("urls_index", templateVars);
+    res.render("urls_index", templateVars);
 });
 
 //LINK TO CREATION PAGE WITHOUT COOKIE
@@ -157,17 +156,13 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
 
   let urlVars = {
-    shortURL: String(generateRandomString()),
+    shortURL: generateRandomString(),
     longURL: req.body.longURL,
     userID: req.session.user_id
   }
   urlDatabase[urlVars["shortURL"]] = { longURL: urlVars["longURL"], userID: urlVars["userID"]};  
-  //[urlVars['shortURL']] = urlVars['longURL']
   res.redirect("/urls/");
 });
-
-//FUNCTION ALLOWING ONLY USERS TO SEE THEIR URLS
-
 
 //EDIT BUTTON ON URLS LIST PAGE TO REDIRECT TO EDIT PAGE
 app.get("/urls/:shortURL/edit", (req, res) => {
@@ -188,23 +183,18 @@ app.post("/urls/:shortURL", (req, res) => {
     user_id: req.session.user_id,
     shortURL: req.params.shortURL,
     longURL: req.body.newURL
-  };//URLS_INDEX CONTAINS^^^^^^^^^^^^^^^^^^^^^^
+  };
   urlDatabase[req.params.shortURL] = { longURL: templateVars["longURL"], userID: templateVars["user_id"]};
   res.render("urls_show", templateVars);
 });
 
-
 //DELETE BUTTON ON URLS LIST TO DELETE URL
 app.get("/urls/:shortURL/delete", (req, res) => {
-  //console.log(req.params.shortURL) 
-  //console.log(urlDatabase)
   if (urlDatabase[req.params.shortURL]["userID"] !== req.session.user_id) 
   {res.redirect('/urls')} 
   delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls')//////////////WWORKING HEREEERER
+  res.redirect('/urls')
 })
-
-
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
@@ -217,15 +207,10 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //SHORT URL LINK TO ACTUAL WEBSITE
 app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
   if (!req.session.user_id) {res.redirect("/bad_request"); return} 
-  
-  console.log(req);
-  console.log(req.session.user_id);
-  //else if (req.session.user_id !== urlDatabase[elem]["userID"]) {res.redirect("/bad_request"); return}; 
-  //const longURL = urlDatabase[req.params.shortURL];
-  
-  //res.redirect(longURL["longURL"]);
-});
+  res.redirect(longURL["longURL"]);
+ });
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
