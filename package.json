@@ -27,7 +27,7 @@
     "cookie-session": "^1.4.0",
     "ejs": "^3.0.1",
     "express": "^4.17.1",
-    "mocha": "^7.0.0"
+    "mocha": "^10.2.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
